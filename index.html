@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RubixHub</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; color: #333; }
+  header { background: #ff5722; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { margin: 0; }
+  nav a { color: white; text-decoration: none; margin: 0 10px; font-weight: bold; cursor: pointer; }
+  nav a:hover { text-decoration: underline; }
+  #coinDisplay { font-weight: bold; animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { color: #fff; text-shadow: 0 0 5px #ffccbc; }
+    50% { color: #ffccbc; text-shadow: 0 0 20px #ff5722; }
+  }
+  .container { padding: 20px; }
+  .hidden { display: none; }
+  .cube-card {
+    display: inline-block; background: white; border-radius: 10px; margin: 10px; padding: 10px; width: 200px;
+    text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .cube-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(255, 87, 34, 0.4);
+  }
+  .cube-card img { width: 100%; border-radius: 8px; }
+  button {
+    padding: 10px 15px; background: #ff5722; color: white; border: none; cursor: pointer; border-radius: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+  button:hover {
+    background: #e64a19;
+    box-shadow: 0 4px 10px rgba(230, 74, 25, 0.7);
+  }
+  .popup {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .popup-content {
+    background: white; padding: 20px; border-radius: 10px; width: 320px; text-align: center;
+    transform: translateY(-30px);
+    transition: transform 0.3s ease;
+  }
+  .popup.show {
+    opacity: 1; pointer-events: auto;
+  }
+  .popup.show .popup-content {
+    transform: translateY(0);
+  }
+  #timer-light {
+    width: 50px; height: 50px; border-radius: 50%; margin: 20px auto;
+    transition: background-color 0.3s;
+  }
+  .green { background: green; }
+  .red { background: red; }
+
+  /* Notification bar */
+  #notify {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #ff5722; color: white; padding: 12px 25px; border-radius: 25px;
+    font-weight: bold; box-shadow: 0 0 10px rgba(255, 87, 34, 0.8);
+    opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+    z-index: 1000;
+  }
+  #notify.show {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* Admin Panel extras */
+  #userList {
+    list-style-type: none; padding-left: 0;
+  }
+  #userList li {
+    margin-bottom: 12px; padding: 10px; background: #fff; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  }
+  #userList li div {
+    flex: 1 1 250px;
+  }
+  #userList li button {
+    margin-left: 8px; padding: 6px 10px; font-size: 14px;
+  }
+  #userList li input {
+    width: 60px; padding: 4px 6px; border-radius: 4px; border: 1px solid #ccc; margin-left: 6px;
+  }
+  #userList li .inventory-list {
+    margin-top: 6px; font-size: 14px;
+  }
+  #userList li .inventory-list span {
+    display: inline-block; background: #ffccbc; margin: 3px 5px 3px 0; padding: 4px 8px; border-radius: 4px;
+    cursor: pointer; user-select: none;
+  }
+  #userList li .inventory-list span:hover {
+    background: #ff5722; color: white;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>RubixHub</h1>
+  <nav>
+    <a onclick="showTab('intro')">Introduction</a>
+    <a onclick="showTab('tutorials')">Tutorials</a>
+    <a onclick="showTab('shop')">Shop</a>
+    <a onclick="showTab('inventory')">Inventory</a>
+    <a onclick="showTab('timer')">Cube Timer</a>
+    <a onclick="showTab('scramble')">Scramble Solver</a>
+    <a onclick="showTab('login')">Login</a>
+    <span id="coinDisplay">💰 0</span>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Login / Signup -->
+  <div id="login" class="">
+    <h2>Login / Signup</h2>
+    <input id="username" placeholder="Username" autocomplete="off" /><br /><br />
+    <input id="password" type="password" placeholder="Password" autocomplete="off" /><br /><br />
+    <button onclick="signup()">Sign Up</button>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="admin" class="hidden">
+    <h2>Admin Panel</h2>
+    <ul id="userList"></ul>
+  </div>
+
+  <!-- Introduction -->
+  <div id="intro" class="hidden">
+    <h2>Types of Rubik's Cubes</h2>
+    <div id="cubeTypes"></div>
+  </div>
+
+  <!-- Tutorials -->
+  <div id="tutorials" class="hidden">
+    <h2>Tutorials</h2>
+    <h4>3x3 Rubics Cube
+      <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\3x3.mp4" type="video/mp4"></video>
+<h4>2x2 Rubics Cube
+      <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\2x2.mp4" type="video/mp4"></video>
+<h4>4x4 Rubics Cube
+      <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\4x4.mp4" type="video/mp4"></video>
+  </div>
+
+  <!-- Shop -->
+  <div id="shop" class="hidden">
+    <h2>Cube Shop</h2>
+    <div id="shopItems"></div>
+  </div>
+
+  <!-- Inventory -->
+  <div id="inventory" class="hidden">
+    <h2>Your Inventory</h2>
+    <div id="inventoryItems"></div>
+  </div>
+
+  <!-- Timer -->
+  <div id="timer" class="hidden">
+    <h2>Cube Timer</h2>
+    <div id="timer-light" class="red"></div>
+    <h1 id="timeDisplay">0.00</h1>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+    <button onclick="resetTimer()">Reset</button>
+  </div>
+
+  <!-- Scramble Solver -->
+  <div id="scramble" class="hidden">
+    <h2>Scramble Analyzer & Solver</h2>
+    <p>Enter your cube scramble notation (like: R U R' U')</p>
+    <textarea id="scrambleInput" rows="4" style="width:100%; border-radius:8px; padding:8px; font-family: monospace;" placeholder="Type scramble moves here..."></textarea><br /><br />
+    <button onclick="analyzeScramble()">Analyze & Solve</button>
+    <h3>Solution:</h3>
+    <pre id="solutionOutput" style="background:#eee; padding:12px; border-radius:8px; white-space: pre-wrap; min-height: 100px;"></pre>
+  </div>
+
+</div>
+
+<!-- Popup -->
+<div id="popup" class="popup">
+  <div class="popup-content">
+    <h3 id="popupTitle"></h3>
+    <img id="popupImg" src="" alt="" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;" />
+    <p id="popupDesc"></p>
+    <p>Price: <span id="popupPrice"></span> coins</p>
+    <button onclick="buyCube()">Buy</button>
+    <button onclick="closePopup()">Close</button>
+  </div>
+</div>
+
+<!-- Notification -->
+<div id="notify"></div>
+
+<script>
+  let currentUser = null;
+  let users = JSON.parse(localStorage.getItem("users")) || {};
+
+  const cubes = [
+    {name:"3x3 Cube", desc:"Classic cube", price:100, img:"https://upload.wikimedia.org/wikipedia/commons/a/a6/Rubik%27s_cube.jpg"},
+    {name:"2x2 Cube", desc:"Mini cube", price:80, img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Rubik%27s_Pocket_Cube.jpg/220px-Rubik%27s_Pocket_Cube.jpg"},
+    {name:"4x4 Cube", desc:"More challenging", price:150, img:"https://upload.wikimedia.org/wikipedia/commons/d/d0/Rubik%27s_4x4.jpg"},
+    {name:"Pyraminx", desc:"Pyramid shape", price:120, img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Pyraminx.jpg/220px-Pyraminx.jpg"},
+    {name:"Megaminx", desc:"Dodecahedron cube", price:200, img:"https://upload.wikimedia.org/wikipedia/commons/d/d2/Megaminx.jpg"},
+    {name:"Skewb", desc:"Twist cube", price:90, img:"https://upload.wikimedia.org/wikipedia/commons/2/2e/Skewb.jpg"},
+    {name:"Mirror Cube", desc:"Shape mod", price:140, img:"https://upload.wikimedia.org/wikipedia/commons/3/33/Mirror_cube_solved.jpg"},
+    {name:"Ghost Cube", desc:"Hard shape mod", price:220, img:"https://upload.wikimedia.org/wikipedia/commons/f/fb/Ghost_cube.jpg"},
+    {name:"Mastermorphix", desc:"Egg-shaped cube", price:130, img:"https://upload.wikimedia.org/wikipedia/commons/d/d4/Mastermorphix.jpg"},
+    {name:"Windmill Cube", desc:"Fun pattern cube", price:110, img:"https://upload.wikimedia.org/wikipedia/commons/0/0c/Windmill_cube.jpg"}
+  ];
+
+  let popupCube = null;
+  let timer, startTime;
+
+  // Navigation
+  function showTab(tab) {
+    document.querySelectorAll(".container > div").forEach(d => d.classList.add("hidden"));
+    document.getElementById(tab).classList.remove("hidden");
+    if(tab === "intro") loadIntro();
+    if(tab === "shop") loadShop();
+    if(tab === "inventory") loadInventory();
+    if(tab === "admin" && currentUser === "atiksh") loadAdmin();
+  }
+
+  // Notifications
+  const notifyBox = document.getElementById("notify");
+  let notifyTimeout;
+  function notify(msg) {
+    clearTimeout(notifyTimeout);
+    notifyBox.textContent = msg;
+    notifyBox.classList.add("show");
+    notifyTimeout = setTimeout(() => {
+      notifyBox.classList.remove("show");
+    }, 2500);
+  }
+
+  // Auth
+  function signup() {
+    let u = document.getElementById("username").value.trim();
+    let p = document.getElementById("password").value.trim();
+    if(!u || !p) return notify("Enter username & password");
+    if(users[u]) return notify("User exists!");
+    users[u] = {pass: p, coins: 500, inventory: []};
+    localStorage.setItem("users", JSON.stringify(users));
+    notify("Signed up! You have 500 coins.");
+  }
+
+  function login() {
+    let u = document.getElementById("username").value.trim();
+    let p = document.getElementById("password").value.trim();
+    if(u === "atiksh" && p === "atiksh7") {
+      currentUser = u;
+      showTab("admin");
+      updateCoinDisplay();
+      return;
+    }
+    if(!users[u] || users[u].pass !== p) return notify("Invalid login");
+    currentUser = u;
+    updateCoinDisplay();
+    showTab("intro");
+  }
+
+  function updateCoinDisplay() {
+    if(currentUser) {
+      document.getElementById("coinDisplay").textContent = "💰 " + (users[currentUser]?.coins || 0);
+    } else {
+      document.getElementById("coinDisplay").textContent = "💰 0";
+    }
+  }
+
+  // Admin Panel
+  function loadAdmin() {
+    const userList = document.getElementById("userList");
+    userList.innerHTML = "";
+    Object.keys(users).forEach(u => {
+      // Create user item container
+      const li = document.createElement("li");
+      const userDiv = document.createElement("div");
+      userDiv.innerHTML = `
+        <strong>${u}</strong> - Coins: 
+        <input type="number" min="0" value="${users[u].coins}" id="coins-${u}" />
+        <button onclick="setUserCoins('${u}')">Set Coins</button>
+        <button onclick="removeUser('${u}')">Remove User</button>
+        <br />
+        <div class="inventory-list">
+          Inventory: 
+          ${users[u].inventory.length > 0 ? users[u].inventory.map((item, i) => `<span title="Click to remove" onclick="removeInventoryItem('${u}', ${i})">${item} &times;</span>`).join("") : "<em>Empty</em>"}
+        </div>
+      `;
+      li.appendChild(userDiv);
+      userList.appendChild(li);
+    });
+  }
+
+  function removeUser(username) {
+    if(username === "atiksh") {
+      notify("Can't remove admin!");
+      return;
+    }
+    if(confirm(`Are you sure you want to remove user "${username}"? This cannot be undone.`)) {
+      delete users[username];
+      if(currentUser === username) currentUser = null;
+      localStorage.setItem("users", JSON.stringify(users));
+      notify(`User "${username}" removed.`);
+      loadAdmin();
+      updateCoinDisplay();
+    }
+  }
+
+  function setUserCoins(username) {
+    const input = document.getElementById(`coins-${username}`);
+    const val = parseInt(input.value);
+    if(isNaN(val) || val < 0) {
+      notify("Invalid coin value!");
+      input.value = users[username].coins;
+      return;
+    }
+    users[username].coins = val;
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`Set coins for "${username}" to ${val}`);
+    if(username === currentUser) updateCoinDisplay();
+  }
+
+  function removeInventoryItem(username, index) {
+    if(!users[username]) return;
+    const itemName = users[username].inventory[index];
+    users[username].inventory.splice(index, 1);
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`Removed "${itemName}" from ${username}'s inventory.`);
+    loadAdmin();
+    if(username === currentUser) loadInventory();
+  }
+
+  // Intro
+  function loadIntro() {
+    const cubeTypes = document.getElementById("cubeTypes");
+    cubeTypes.innerHTML = "";
+    cubes.forEach(c => {
+      let div = document.createElement("div");
+      div.className = "cube-card";
+      div.innerHTML = `<img src="${c.img}" alt="${c.name}" /><h4>${c.name}</h4><p>${c.desc}</p>`;
+      cubeTypes.appendChild(div);
+    });
+  }
+
+  // Shop
+  function loadShop() {
+    const shopItems = document.getElementById("shopItems");
+    shopItems.innerHTML = "";
+    cubes.forEach((c,i) => {
+      let div = document.createElement("div");
+      div.className = "cube-card";
+      div.innerHTML = `<img src="${c.img}" alt="${c.name}"/><h4>${c.name}</h4><p>${c.price} coins</p><button onclick="openPopup(${i})">View</button>`;
+      shopItems.appendChild(div);
+    });
+  }
+
+  function openPopup(i) {
+    popupCube = i;
+    document.getElementById("popupTitle").textContent = cubes[i].name;
+    const img = document.getElementById("popupImg");
+    img.src = cubes[i].img;
+    img.alt = cubes[i].name;
+    document.getElementById("popupDesc").textContent = cubes[i].desc;
+    document.getElementById("popupPrice").textContent = cubes[i].price;
+    const popup = document.getElementById("popup");
+    popup.classList.add("show");
+  }
+  function closePopup() {
+    document.getElementById("popup").classList.remove("show");
+  }
+
+  function buyCube() {
+    if(!currentUser) return notify("Login first!");
+    let u = users[currentUser];
+    let c = cubes[popupCube];
+    if(u.coins < c.price) return notify("Not enough coins!");
+    u.coins -= c.price;
+    u.inventory.push(c.name);
+    localStorage.setItem("users", JSON.stringify(users));
+    updateCoinDisplay();
+    notify(`Bought ${c.name}`);
+    closePopup();
+  }
+
+  // Inventory
+  function loadInventory() {
+    const inventoryItems = document.getElementById("inventoryItems");
+    inventoryItems.innerHTML = "";
+    let inv = users[currentUser]?.inventory || [];
+    inv.forEach((name, idx) => {
+      let c = cubes.find(cu => cu.name === name);
+      let div = document.createElement("div");
+      div.className = "cube-card";
+      div.innerHTML = `<img src="${c.img}" alt="${c.name}"/><h4>${c.name}</h4><p>Sell for ${c.price} coins</p><button onclick="sellCube(${idx})">Sell</button>`;
+      inventoryItems.appendChild(div);
+    });
+  }
+
+  function sellCube(i) {
+    let u = users[currentUser];
+    let cName = u.inventory[i];
+    let c = cubes.find(cu => cu.name === cName);
+    u.coins += c.price;
+    u.inventory.splice(i,1);
+    localStorage.setItem("users", JSON.stringify(users));
+    loadInventory();
+    updateCoinDisplay();
+  }
+
+  // Timer
+  function startTimer() {
+    timer_light.className = "green";
+    startTime = Date.now();
+    timer = setInterval(() => {
+      timeDisplay.textContent = ((Date.now()-startTime)/1000).toFixed(2);
+    }, 10);
+  }
+  function stopTimer() {
+    clearInterval(timer);
+    timer_light.className = "red";
+  }
+  function resetTimer() {
+    stopTimer();
+    timeDisplay.textContent = "0.00";
+  }
+
+  // Scramble Solver (simple reverse moves)
+  function analyzeScramble() {
+    let input = document.getElementById("scrambleInput").value.trim();
+    if(!input) return notify("Enter scramble moves!");
+    let moves = input.split(/\s+/);
+    let reversed = moves.reverse().map(m => {
+      if(m.endsWith("'")) return m.slice(0,-1);
+      if(m.endsWith("2")) return m;
+      return m + "'";
+    });
+    document.getElementById("solutionOutput").textContent = reversed.join(" ");
+    notify("Solution generated!");
+  }
+
+  // Auto add 100 coins every 30 seconds if logged in
+  setInterval(() => {
+    if(currentUser && users[currentUser]) {
+      users[currentUser].coins += 100;
+      localStorage.setItem("users", JSON.stringify(users));
+      updateCoinDisplay();
+      notify("100 coins added!");
+    }
+  }, 30000);
+
+  // Initial UI references
+  const timer_light = document.getElementById("timer-light");
+  const timeDisplay = document.getElementById("timeDisplay");
+
+</script>
+
+</body>
+</html>
