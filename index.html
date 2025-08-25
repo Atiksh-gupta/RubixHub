@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RubixHub</title>
+<title>🧩 RubixHub 🧩</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; color: #333; }
   header { background: #ff5722; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -97,6 +97,13 @@
   #userList li .inventory-list span:hover {
     background: #ff5722; color: white;
   }
+
+  /* Cart/Wishlist lists */
+  .list-item { background: white; padding: 12px; border-radius: 8px; margin: 8px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center;}
+  .small-btn { padding:6px 8px; font-size:13px; margin-left:6px; border-radius:6px; }
+  .green-btn { background:#4caf50; color:white; border:none; }
+  .red-btn { background:#f44336; color:white; border:none; }
+  .orange-btn { background:#ff9800; color:white; border:none; }
 </style>
 </head>
 <body>
@@ -105,12 +112,15 @@
   <h1>RubixHub</h1>
   <nav>
     <a onclick="showTab('intro')">Introduction</a>
+    <a onclick="showTab('info')">Info</a>
     <a onclick="showTab('tutorials')">Tutorials</a>
     <a onclick="showTab('shop')">Shop</a>
+    <a onclick="showTab('cart')">Cart</a>
+    <a onclick="showTab('wishlist')">Wishlist</a>
     <a onclick="showTab('inventory')">Inventory</a>
     <a onclick="showTab('timer')">Cube Timer</a>
     <a onclick="showTab('scramble')">Scramble Solver</a>
-    <a onclick="showTab('login')">Login</a>
+    <a onclick="logout()">Logout</a>
     <span id="coinDisplay">💰 0</span>
   </nav>
 </header>
@@ -138,14 +148,52 @@
     <div id="cubeTypes"></div>
   </div>
 
+  <!-- Info -->
+  <div id="info" class="hidden">
+    <h2>About Cubes</h2>
+<br><u>1. 2×2 Cube (Pocket Cube)</u>
+<br>Only has corners, no edges or centers.
+<br>Easier to solve but still needs logic and algorithms.
+<br>Good for beginners or for speedsolving warm-ups.
+<br><u>2. 3×3 Cube (Standard)</u>
+<br>The OG Rubik’s Cube.
+<br>43 quintillion possible combinations.
+<br>Most tutorials and competitions revolve around this.
+<br><u>3. 4×4 Cube (Rubik’s Revenge)</u>
+<br>Has no fixed centers, so more complex.
+<br>Introduces “parity errors” that don’t happen in 3×3.
+<br>Great for intermediate solvers.
+<br><u>4. 5×5 Cube (Professor’s Cube)</u>
+<br>Bigger, more pieces to align.
+<br>Still uses 3×3 solving concepts after reduction.
+<br><u>5. Pyraminx</u>
+<br>Pyramid-shaped twisty puzzle.
+<br>Usually faster to solve than a cube.
+<br><u>6. Megaminx</u>
+<br>Dodecahedron (12 sides).
+<br>Similar to 3×3 but with more steps due to extra sides.
+<br><u>7. Mirror Cube</u>
+<br>Same mechanics as a 3×3 but different block sizes.
+<br>You solve based on shape, not color.
+<br><u>8. Ghost Cube</u>
+<br>A shape mod of the 3×3, turns into a mess when scrambled.
+<br>Alignment is tricky because pieces don’t match visually.
+<br><u>9. Skewb</u>
+<br>Turns along its corners instead of faces.
+<br>Feels totally different to solve.
+<br><u>10. Square-1</u>
+<br>Can change shape completely while scrambling.
+<br>Known for being weird but fun to solve.
+  </div>
+
   <!-- Tutorials -->
   <div id="tutorials" class="hidden">
     <h2>Tutorials</h2>
     <h4>3x3 Rubics Cube
       <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\3x3.mp4" type="video/mp4"></video>
-<h4>2x2 Rubics Cube
+    <h4>2x2 Rubics Cube
       <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\2x2.mp4" type="video/mp4"></video>
-<h4>4x4 Rubics Cube
+    <h4>4x4 Rubics Cube
       <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\4x4.mp4" type="video/mp4"></video>
   </div>
 
@@ -159,6 +207,20 @@
   <div id="inventory" class="hidden">
     <h2>Your Inventory</h2>
     <div id="inventoryItems"></div>
+  </div>
+
+  <!-- Cart -->
+  <div id="cart" class="hidden">
+    <h2>Your Cart</h2>
+    <div id="cartItems"></div>
+    <p><strong>Total:</strong> <span id="cartTotal">0</span> coins</p>
+    <button onclick="checkout()">Checkout</button>
+  </div>
+
+  <!-- Wishlist -->
+  <div id="wishlist" class="hidden">
+    <h2>Your Wishlist</h2>
+    <div id="wishlistItems"></div>
   </div>
 
   <!-- Timer -->
@@ -199,6 +261,7 @@
 <div id="notify"></div>
 
 <script>
+  // Keep same data structure; add cart & wishlist fields
   let currentUser = null;
   let users = JSON.parse(localStorage.getItem("users")) || {};
 
@@ -221,10 +284,14 @@
   // Navigation
   function showTab(tab) {
     document.querySelectorAll(".container > div").forEach(d => d.classList.add("hidden"));
-    document.getElementById(tab).classList.remove("hidden");
+    const el = document.getElementById(tab);
+    if(el) el.classList.remove("hidden");
+    // load dynamic content for tabs
     if(tab === "intro") loadIntro();
     if(tab === "shop") loadShop();
     if(tab === "inventory") loadInventory();
+    if(tab === "cart") loadCart();
+    if(tab === "wishlist") loadWishlist();
     if(tab === "admin" && currentUser === "atiksh") loadAdmin();
   }
 
@@ -246,15 +313,21 @@
     let p = document.getElementById("password").value.trim();
     if(!u || !p) return notify("Enter username & password");
     if(users[u]) return notify("User exists!");
-    users[u] = {pass: p, coins: 500, inventory: []};
+    users[u] = {pass: p, coins: 500, inventory: [], cart: [], wishlist: []};
     localStorage.setItem("users", JSON.stringify(users));
     notify("Signed up! You have 500 coins.");
+    // auto-login after signup
+    currentUser = u;
+    updateCoinDisplay();
+    showTab("intro");
   }
 
   function login() {
     let u = document.getElementById("username").value.trim();
     let p = document.getElementById("password").value.trim();
     if(u === "atiksh" && p === "atiksh7") {
+      // ensure admin exists in users map
+      if(!users[u]) users[u] = {pass:p, coins:500, inventory: [], cart: [], wishlist: []};
       currentUser = u;
       showTab("admin");
       updateCoinDisplay();
@@ -264,6 +337,16 @@
     currentUser = u;
     updateCoinDisplay();
     showTab("intro");
+    notify("Welcome back, " + u + "!");
+  }
+
+  function logout() {
+    if(currentUser) {
+      notify("Logged out: " + currentUser);
+    }
+    currentUser = null;
+    updateCoinDisplay();
+    showTab("login");
   }
 
   function updateCoinDisplay() {
@@ -291,6 +374,10 @@
         <div class="inventory-list">
           Inventory: 
           ${users[u].inventory.length > 0 ? users[u].inventory.map((item, i) => `<span title="Click to remove" onclick="removeInventoryItem('${u}', ${i})">${item} &times;</span>`).join("") : "<em>Empty</em>"}
+        </div>
+        <div style="margin-top:8px;">
+          Cart: ${users[u].cart.length} items &nbsp;
+          Wishlist: ${users[u].wishlist.length} items
         </div>
       `;
       li.appendChild(userDiv);
@@ -356,7 +443,12 @@
     cubes.forEach((c,i) => {
       let div = document.createElement("div");
       div.className = "cube-card";
-      div.innerHTML = `<img src="${c.img}" alt="${c.name}"/><h4>${c.name}</h4><p>${c.price} coins</p><button onclick="openPopup(${i})">View</button>`;
+      div.innerHTML = `<img src="${c.img}" alt="${c.name}"/><h4>${c.name}</h4><p>${c.price} coins</p>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button onclick="openPopup(${i})">View</button>
+          <button onclick="addToCart(${i})" class="small-btn orange-btn">Add to Cart</button>
+          <button onclick="addToWishlist(${i})" class="small-btn" style="background:#ffc107;color:#000;border:none;border-radius:6px;">Wishlist</button>
+        </div>`;
       shopItems.appendChild(div);
     });
   }
@@ -389,32 +481,179 @@
     closePopup();
   }
 
+  // add to cart/wishlist
+  function addToCart(index) {
+    if(!currentUser) return notify("Login first!");
+    const name = cubes[index].name;
+    const u = users[currentUser];
+    if(!u.cart) u.cart = [];
+    u.cart.push(index); // store index for price lookup
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`${name} added to cart`);
+    loadCart();
+  }
+
+  function addToWishlist(index) {
+    if(!currentUser) return notify("Login first!");
+    const name = cubes[index].name;
+    const u = users[currentUser];
+    if(!u.wishlist) u.wishlist = [];
+    // avoid duplicates
+    if(u.wishlist.includes(index)) { notify("Already in wishlist"); return; }
+    u.wishlist.push(index);
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`${name} added to wishlist`);
+    loadWishlist();
+  }
+
+  // Cart
+  function loadCart() {
+    const cartItems = document.getElementById("cartItems");
+    cartItems.innerHTML = "";
+    if(!currentUser) { cartItems.innerHTML = "<p>Login to see your cart.</p>"; return; }
+    const u = users[currentUser];
+    if(!u.cart || u.cart.length === 0) { cartItems.innerHTML = "<p>Your cart is empty.</p>"; document.getElementById("cartTotal").textContent = "0"; return; }
+    let total = 0;
+    u.cart.forEach((idx, i) => {
+      const c = cubes[idx];
+      total += c.price;
+      const div = document.createElement("div");
+      div.className = "list-item";
+      div.innerHTML = `<div>${c.name} - ${c.price} coins</div>
+        <div>
+          <button class="small-btn green-btn" onclick="buySingleFromCart(${i})">Buy</button>
+          <button class="small-btn red-btn" onclick="removeFromCart(${i})">Remove</button>
+        </div>`;
+      cartItems.appendChild(div);
+    });
+    document.getElementById("cartTotal").textContent = total;
+  }
+
+  function removeFromCart(cartIndex) {
+    if(!currentUser) return notify("Login first!");
+    const u = users[currentUser];
+    const idx = u.cart[cartIndex];
+    const name = cubes[idx].name;
+    u.cart.splice(cartIndex, 1);
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`${name} removed from cart`);
+    loadCart();
+  }
+
+  // Checkout: buy all items in cart
+  function checkout() {
+    if(!currentUser) return notify("Login first!");
+    const u = users[currentUser];
+    if(!u.cart || u.cart.length === 0) return notify("Cart is empty");
+    let total = u.cart.reduce((sum, idx) => sum + cubes[idx].price, 0);
+    if(u.coins < total) return notify("Not enough coins for checkout");
+    u.coins -= total;
+    // add items to inventory by name
+    u.inventory = u.inventory.concat(u.cart.map(ci => cubes[ci].name));
+    u.cart = [];
+    localStorage.setItem("users", JSON.stringify(users));
+    updateCoinDisplay();
+    notify(`Checked out! Spent ${total} coins`);
+    loadCart();
+    loadInventory();
+  }
+
+  function buySingleFromCart(cartIndex) {
+    if(!currentUser) return notify("Login first!");
+    const u = users[currentUser];
+    const idx = u.cart[cartIndex];
+    const price = cubes[idx].price;
+    if(u.coins < price) return notify("Not enough coins");
+    u.coins -= price;
+    u.inventory.push(cubes[idx].name);
+    u.cart.splice(cartIndex, 1);
+    localStorage.setItem("users", JSON.stringify(users));
+    updateCoinDisplay();
+    notify(`Bought ${cubes[idx].name}`);
+    loadCart();
+    loadInventory();
+  }
+
+  // Wishlist
+  function loadWishlist() {
+    const list = document.getElementById("wishlistItems");
+    list.innerHTML = "";
+    if(!currentUser) { list.innerHTML = "<p>Login to see wishlist.</p>"; return; }
+    const u = users[currentUser];
+    if(!u.wishlist || u.wishlist.length === 0) { list.innerHTML = "<p>Wishlist empty.</p>"; return; }
+    u.wishlist.forEach((idx, i) => {
+      const c = cubes[idx];
+      const div = document.createElement("div");
+      div.className = "list-item";
+      div.innerHTML = `<div>${c.name} - ${c.price} coins</div>
+        <div>
+          <button class="small-btn orange-btn" onclick="addToCartFromWishlist(${i})">Add to Cart</button>
+          <button class="small-btn red-btn" onclick="removeFromWishlist(${i})">Remove</button>
+        </div>`;
+      list.appendChild(div);
+    });
+  }
+
+  function addToCartFromWishlist(wIndex) {
+    if(!currentUser) return notify("Login first!");
+    const u = users[currentUser];
+    const idx = u.wishlist[wIndex];
+    u.cart.push(idx);
+    // optionally remove from wishlist
+    u.wishlist.splice(wIndex, 1);
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`${cubes[idx].name} moved to cart`);
+    loadWishlist();
+    loadCart();
+  }
+
+  function removeFromWishlist(wIndex) {
+    if(!currentUser) return notify("Login first!");
+    const u = users[currentUser];
+    const idx = u.wishlist[wIndex];
+    u.wishlist.splice(wIndex, 1);
+    localStorage.setItem("users", JSON.stringify(users));
+    notify(`${cubes[idx].name} removed from wishlist`);
+    loadWishlist();
+  }
+
   // Inventory
   function loadInventory() {
     const inventoryItems = document.getElementById("inventoryItems");
     inventoryItems.innerHTML = "";
+    if(!currentUser) { inventoryItems.innerHTML = "<p>Login to see your inventory.</p>"; return; }
     let inv = users[currentUser]?.inventory || [];
+    if(inv.length === 0) {
+      inventoryItems.innerHTML = "<p>Your inventory is empty.</p>";
+      return;
+    }
     inv.forEach((name, idx) => {
       let c = cubes.find(cu => cu.name === name);
+      // fallback if cube not found
+      if(!c) c = {img:'', name:name, price:0};
       let div = document.createElement("div");
       div.className = "cube-card";
-      div.innerHTML = `<img src="${c.img}" alt="${c.name}"/><h4>${c.name}</h4><p>Sell for ${c.price} coins</p><button onclick="sellCube(${idx})">Sell</button>`;
+      div.innerHTML = `<img src="${c.img}" alt="${c.name}"><h4>${c.name}</h4><p>Sell for ${c.price} coins</p><button onclick="sellCube(${idx})">Sell</button>`;
       inventoryItems.appendChild(div);
     });
   }
 
   function sellCube(i) {
+    if(!currentUser) return notify("Login first!");
     let u = users[currentUser];
     let cName = u.inventory[i];
-    let c = cubes.find(cu => cu.name === cName);
+    let c = cubes.find(cu => cu.name === cName) || {price:0};
     u.coins += c.price;
     u.inventory.splice(i,1);
     localStorage.setItem("users", JSON.stringify(users));
     loadInventory();
     updateCoinDisplay();
+    notify(`Sold ${cName} for ${c.price} coins`);
   }
 
   // Timer
+  const timer_light = document.getElementById("timer-light");
+  const timeDisplay = document.getElementById("timeDisplay");
   function startTimer() {
     timer_light.className = "green";
     startTime = Date.now();
@@ -455,9 +694,11 @@
     }
   }, 30000);
 
-  // Initial UI references
-  const timer_light = document.getElementById("timer-light");
-  const timeDisplay = document.getElementById("timeDisplay");
+  // Initial load: show login tab
+  window.onload = () => {
+    showTab('login');
+    updateCoinDisplay();
+  };
 
 </script>
 
