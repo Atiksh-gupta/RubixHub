@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🧩 RubixHub 🧩</title>
+<title>RubixHub</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; color: #333; }
   header { background: #ff5722; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -104,6 +104,37 @@
   .green-btn { background:#4caf50; color:white; border:none; }
   .red-btn { background:#f44336; color:white; border:none; }
   .orange-btn { background:#ff9800; color:white; border:none; }
+ 
+.fancy-link {
+    position: relative;
+    color: #0077ff;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 4px 6px;
+    transition: color 0.3s ease;
+  }
+
+  .fancy-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #ff4b1f, #1fddff);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+  }
+
+  .fancy-link:hover {
+    color: #ff4b1f;
+  }
+
+  .fancy-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 </style>
 </head>
 <body>
@@ -115,9 +146,9 @@
     <a onclick="showTab('info')">Info</a>
     <a onclick="showTab('tutorials')">Tutorials</a>
     <a onclick="showTab('shop')">Shop</a>
+    <a onclick="showTab('inventory')">Inventory</a>
     <a onclick="showTab('cart')">Cart</a>
     <a onclick="showTab('wishlist')">Wishlist</a>
-    <a onclick="showTab('inventory')">Inventory</a>
     <a onclick="showTab('timer')">Cube Timer</a>
     <a onclick="showTab('scramble')">Scramble Solver</a>
     <a onclick="logout()">Logout</a>
@@ -148,53 +179,19 @@
     <div id="cubeTypes"></div>
   </div>
 
-  <!-- Info -->
-  <div id="info" class="hidden">
-    <h2>About Cubes</h2>
-<br><u>1. 2×2 Cube (Pocket Cube)</u>
-<br>Only has corners, no edges or centers.
-<br>Easier to solve but still needs logic and algorithms.
-<br>Good for beginners or for speedsolving warm-ups.
-<br><u>2. 3×3 Cube (Standard)</u>
-<br>The OG Rubik’s Cube.
-<br>43 quintillion possible combinations.
-<br>Most tutorials and competitions revolve around this.
-<br><u>3. 4×4 Cube (Rubik’s Revenge)</u>
-<br>Has no fixed centers, so more complex.
-<br>Introduces “parity errors” that don’t happen in 3×3.
-<br>Great for intermediate solvers.
-<br><u>4. 5×5 Cube (Professor’s Cube)</u>
-<br>Bigger, more pieces to align.
-<br>Still uses 3×3 solving concepts after reduction.
-<br><u>5. Pyraminx</u>
-<br>Pyramid-shaped twisty puzzle.
-<br>Usually faster to solve than a cube.
-<br><u>6. Megaminx</u>
-<br>Dodecahedron (12 sides).
-<br>Similar to 3×3 but with more steps due to extra sides.
-<br><u>7. Mirror Cube</u>
-<br>Same mechanics as a 3×3 but different block sizes.
-<br>You solve based on shape, not color.
-<br><u>8. Ghost Cube</u>
-<br>A shape mod of the 3×3, turns into a mess when scrambled.
-<br>Alignment is tricky because pieces don’t match visually.
-<br><u>9. Skewb</u>
-<br>Turns along its corners instead of faces.
-<br>Feels totally different to solve.
-<br><u>10. Square-1</u>
-<br>Can change shape completely while scrambling.
-<br>Known for being weird but fun to solve.
-  </div>
-
   <!-- Tutorials -->
   <div id="tutorials" class="hidden">
     <h2>Tutorials</h2>
+    <h4>Finger Tricks & Layer Names</h4>
+    <br><a href="https://www.youtube.com/watch?v=PTo_0szKAy4&pp=ygUkaGFzbmFpbiB0ZWNobmljYWwgaG93IHRvIGZpbmdlcnRyaWNr">How to turn a cube faster</a>
     <h4>3x3 Rubics Cube
-      <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\3x3.mp4" type="video/mp4"></video>
+    <br><a href="https://www.youtube.com/watch?v=buSlfOijwoc&pp=ygUjaGFzbmFpbiB0ZWNobmljYWwgaG93IHRvIHNvbHZlIDPDlzM%3D">How to Solve your first 3x3</a>
     <h4>2x2 Rubics Cube
-      <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\2x2.mp4" type="video/mp4"></video>
+    <br><a href="https://www.youtube.com/watch?v=xIRv4ZhNndc&pp=ygUlaGFzbmFpbiB0ZWNobmljYWwgaG93IHRvIHNvbHZlIDIgYnkgMtgGAw%3D%3D">How to Solve your first 2x2</a>
     <h4>4x4 Rubics Cube
-      <video width="400" controls><source src="C:\Users\Atiksh\Desktop\Website\RubixHub\4x4.mp4" type="video/mp4"></video>
+    <br><a href="https://www.youtube.com/watch?v=4IAAUoOOm8c&pp=ygUlaGFzbmFpbiB0ZWNobmljYWwgaG93IHRvIHNvbHZlIDQgYnkgNA%3D%3D">How to Solve your first 4x4</a>
+    <h4>4x4 Rubics Cube
+    <br><a href="https://www.youtube.com/watch?v=zmZ5o0GJcOI&pp=ygUiaGFzbmFpbiB0ZWNobmljYWwgaG93IHRvIHNvbHZlIDV4NQ%3D%3D">How to Solve your first 5x5</a>
   </div>
 
   <!-- Shop -->
@@ -241,6 +238,78 @@
     <button onclick="analyzeScramble()">Analyze & Solve</button>
     <h3>Solution:</h3>
     <pre id="solutionOutput" style="background:#eee; padding:12px; border-radius:8px; white-space: pre-wrap; min-height: 100px;"></pre>
+  </div>
+
+  <!-- Info -->
+  <div id="info" class="hidden">
+    <h2>About RubixHub</h2>
+    <div style="font-family: Arial, sans-serif; background:#f4f4f9; padding:20px; border-radius:12px; width:500px; line-height:1.6; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+  <h2 style="text-align:center; color:#ff5722; text-shadow:1px 1px #ddd;">🧩 Rubik's Cube Variants</h2>
+  
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">1. 2×2 Cube (Pocket Cube)</u><br>
+    <span style="color:#555;">Only has corners, no edges or centers.<br>
+    Easier to solve but still needs logic and algorithms.<br>
+    Good for beginners or for speedsolving warm-ups.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">2. 3×3 Cube (Standard)</u><br>
+    <span style="color:#555;">The OG Rubik’s Cube.<br>
+    43 quintillion possible combinations.<br>
+    Most tutorials and competitions revolve around this.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">3. 4×4 Cube (Rubik’s Revenge)</u><br>
+    <span style="color:#555;">Has no fixed centers, so more complex.<br>
+    Introduces “parity errors” that don’t happen in 3×3.<br>
+    Great for intermediate solvers.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">4. 5×5 Cube (Professor’s Cube)</u><br>
+    <span style="color:#555;">Bigger, more pieces to align.<br>
+    Still uses 3×3 solving concepts after reduction.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">5. Pyraminx</u><br>
+    <span style="color:#555;">Pyramid-shaped twisty puzzle.<br>
+    Usually faster to solve than a cube.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">6. Megaminx</u><br>
+    <span style="color:#555;">Dodecahedron (12 sides).<br>
+    Similar to 3×3 but with more steps due to extra sides.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">7. Mirror Cube</u><br>
+    <span style="color:#555;">Same mechanics as a 3×3 but different block sizes.<br>
+    You solve based on shape, not color.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">8. Ghost Cube</u><br>
+    <span style="color:#555;">A shape mod of the 3×3, turns into a mess when scrambled.<br>
+    Alignment is tricky because pieces don’t match visually.</span>
+  </p>
+
+  <p style="margin-bottom:12px;">
+    <u style="color:#3f51b5; font-weight:bold;">9. Skewb</u><br>
+    <span style="color:#555;">Turns along its corners instead of faces.<br>
+    Feels totally different to solve.</span>
+  </p>
+
+  <p>
+    <u style="color:#3f51b5; font-weight:bold;">10. Square-1</u><br>
+    <span style="color:#555;">Can change shape completely while scrambling.<br>
+    Known for being weird but fun to solve.</span>
+  </p>
+</div>
+
   </div>
 
 </div>
